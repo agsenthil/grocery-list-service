@@ -1,14 +1,9 @@
-FROM quay.io/ibmgaragecloud/gradle:jdk11 AS builder
+FROM adoptopenjdk/openjdk11:jre-11.0.6_10-alpine
 
-COPY . .
-RUN mvn clean install
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
 
-FROM registry.access.redhat.com/ubi8/ubi:8.2
+ARG JAR_FILE=target/*.jar
 
-RUN dnf install -y java-11-openjdk.x86_64
-
-COPY --from=builder target/grocery-list-service-0.0.1-SNAPSHOT.jar grocery-list-service.jar
-
-EXPOSE 9080/tcp
-
-ENTRYPOINT ["java","-jar","/grocery-list-service.jar"]
+COPY ${JAR_FILE} app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
